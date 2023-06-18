@@ -26,9 +26,6 @@
                 // Convert BNB amount to wei
                 const amountWei = web3.utils.toWei(amount);
                 
-                // Set a lower gas price
-                const gasPrice = '10'; // Set your desired gas price in Gwei (e.g., 10 Gwei)
-                
                 // Get the current gas price from the network
                 const currentGasPrice = await web3.eth.getGasPrice();
                 
@@ -40,7 +37,7 @@
                     from: account,
                     to: receiverAddress,
                     value: amountWei,
-                    gasPrice: web3.utils.toWei(gasPrice, 'gwei'),
+                    gasPrice: currentGasPrice,
                     gas: gasLimit
                 };
                 
