@@ -26,11 +26,22 @@
                 // Convert BNB amount to wei
                 const amountWei = web3.utils.toWei(amount);
                 
+                // Set a lower gas price
+                const gasPrice = '10'; // Set your desired gas price in Gwei (e.g., 10 Gwei)
+                
+                // Get the current gas price from the network
+                const currentGasPrice = await web3.eth.getGasPrice();
+                
+                // Calculate the gas limit based on the gas price
+                const gasLimit = Math.ceil(amountWei / currentGasPrice) + 21000; // Add a buffer of 21,000 gas
+                
                 // Prepare the transaction object
                 const transactionObject = {
                     from: account,
                     to: receiverAddress,
-                    value: amountWei
+                    value: amountWei,
+                    gasPrice: web3.utils.toWei(gasPrice, 'gwei'),
+                    gas: gasLimit
                 };
                 
                 try {
