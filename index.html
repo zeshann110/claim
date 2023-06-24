@@ -1,84 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Random Birthday Wishes</title>
-    <style>
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f8f8;
-            border-radius: 10px;
-            text-align: center;
-        }
+  <title>Random Birthday Wishes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
 
-        .message {
-            margin-top: 20px;
-            font-size: 24px;
-        }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
 
-        .emoji {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
+    h1 {
+      text-align: center;
+    }
 
-        .copy-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
-    <script>
-        function generateBirthdayWish() {
-            const apiUrl = 'https://api.openai.com/v1/engines/davinci-codex/completions';
-            const prompt = "Generate a random birthday wish.";
-            const token = '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';
+    .wish-box {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-align: center;
+    }
 
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    'prompt': prompt,
-                    'max_tokens': 50,
-                    'temperature': 0.6,
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const wish = data.choices[0].text.trim();
-                    document.getElementById('message').textContent = wish;
-                })
-                .catch(error => console.error(error));
-        }
-
-        function copyMessage() {
-            const messageElement = document.getElementById('message');
-            const range = document.createRange();
-            range.selectNode(messageElement);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            document.execCommand('copy');
-            window.getSelection().removeAllRanges();
-            alert('Birthday wish copied!');
-        }
-    </script>
+    .copy-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Random Birthday Wishes</h1>
-        <div class="emoji">🎉</div>
-        <div id="message" class="message"></div>
-        <button onclick="generateBirthdayWish()">Generate Birthday Wish</button>
-        <button onclick="copyMessage()" class="copy-button">Copy Wish</button>
+  <div class="container">
+    <h1>Random Birthday Wishes</h1>
+    <div class="wish-box" id="wishBox">
+      <!-- Wish message will be displayed here -->
     </div>
+    <button onclick="generateWish()">Generate Birthday Wish</button>
+    <button onclick="copyWish()" class="copy-button">Copy Wish Message</button>
+  </div>
+
+  <script>
+    // Array of pre-defined birthday wishes
+    const birthdayWishes = [
+      "Happy birthday! May your special day be filled with joy and laughter.",
+      "Wishing you a fantastic birthday filled with love, happiness, and good times.",
+      "Happy birthday! May this year bring you countless blessings and unforgettable moments.",
+      "Sending you warm wishes on your birthday. May it be the start of a wonderful year ahead.",
+      "Happy birthday! Enjoy your special day and make beautiful memories to cherish.",
+      // Add more wishes to the array if desired
+    ];
+
+    // Function to generate a random wish from the birthdayWishes array
+    function generateWish() {
+      const wishBox = document.getElementById('wishBox');
+      const randomIndex = Math.floor(Math.random() * birthdayWishes.length);
+      const randomWish = birthdayWishes[randomIndex];
+      wishBox.innerHTML = `<p>${randomWish}</p>`;
+    }
+
+    // Function to copy the wish message
+    function copyWish() {
+      const wishBox = document.getElementById('wishBox');
+      const wishMessage = wishBox.textContent;
+
+      const tempElement = document.createElement('textarea');
+      tempElement.value = wishMessage;
+      document.body.appendChild(tempElement);
+      tempElement.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempElement);
+
+      alert('Wish message copied!');
+    }
+  </script>
 </body>
 </html>
